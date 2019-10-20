@@ -82,6 +82,8 @@ def gameMain():
                 print('Get quit event')
                 game_quit = True
 
+            cur_blocks = gameCheckMouseEvent(event, cur_blocks)
+
         cur_blocks = updateGame(cur_blocks)
         drawGame(cur_blocks)
 
@@ -97,12 +99,12 @@ def gameMain():
 
 def updateGame(blocks):
     blocks.sort(key=lambda block: block.rect.y, reverse=True)
-    ret_blocks = [block for block in blocks if not block.isValid()]
+    ret_blocks = [block for block in blocks if not block.isValid() or block.selected]
     exists = [True] * len(blocks)
 
     # drop and check collision
     for i, block in enumerate(blocks):
-        if not block.isValid():
+        if not block.isValid() or block.selected:
             continue
 
         drop_block = block.getDrop()
@@ -156,6 +158,85 @@ def gameQuitEvent(event):
         quit = event.key in QUIT_KEYS
 
     return quit
+
+def moveBlock(blocks, i, pos):
+    target_block = blocks[i]
+    off = (pos[0] - target_block.rect.x, pos[1] - target_block.rect.y)
+
+    collided = False
+    move_block = target_block.getMove((off[0], 0))
+    for j, block in enumerate(blocks):
+        if i == j:
+            continue
+
+        if move_block.checkCollision(block):
+            collided = True
+            break
+
+    if collided:
+        move_block = target_block
+    else:
+        target_block = move_block
+
+    collided = False
+    move_block = move_block.getMove((0, off[1]))
+    for j, block in enumerate(blocks):
+        if i == j:
+            continue
+
+        if move_block.checkCollision(block):
+            collided = True
+            break
+
+    if collided:
+        move_block = target_block
+
+    merged = -1
+    for j, block in enumerate(blocks):
+        if i == j:
+            continue
+
+        if move_block.checkMerge(block):
+            merged = j
+            break
+
+    ret_blocks = []
+    if merged >= 0:
+        blocks[merged].num += 1
+    else:
+        ret_blocks += [move_block]
+    ret_blocks += [block for j, block in enumerate(blocks) if i != j]
+
+    return ret_blocks
+
+def horizonalAlign(orix):
+    return (orix + BLOCK_SIDE//2) // BLOCK_SIDE * BLOCK_SIDE
+
+def gameCheckMouseEvent(event, blocks):
+    if event.type == pg.MOUSEBUTTONDOWN:
+        pos = (event.pos[0], event.pos[1] - TITLE_HEIGHT)
+        if pos[1] < 0:
+            pos = (pos[0], 0)
+        match_block = getCollided(blocks, pos)
+
+        if match_block >= 0:
+            blocks[match_block].selected = True
+    elif event.type == pg.MOUSEBUTTONUP:
+        match_block = getSelected(blocks)
+
+        if match_block >= 0:
+            blocks[match_block].selected = False
+            blocks[match_block].rect.x = horizonalAlign(blocks[match_block].rect.x)
+    elif event.type == pg.MOUSEMOTION:
+        pos = (event.pos[0] - BLOCK_SIDE//2, event.pos[1] - BLOCK_SIDE//2 - TITLE_HEIGHT)
+        if pos[1] < 0:
+            pos = (pos[0], 0)
+        match_block = getSelected(blocks)
+
+        if match_block >= 0:
+            blocks = moveBlock(blocks, match_block, pos)
+
+    return blocks
 
 def loadImages():
     global BLOCK_IMGS
