@@ -4,19 +4,19 @@ import math
 
 from copy import deepcopy
 
-NUM_BLOCKS = 21
+NUM_BLOCKS = 20
 WIDTH_SIZE = 7
 HEIGHT_SIZE = 8
 BLOCK_SIDE = 50
 BLOCK_DROP_VEL = 10
 
-def genRndBlock(num_lim = NUM_BLOCKS-1):
+def genRndBlock(num_lim = NUM_BLOCKS-1, x = -1, y = -1):
     if num_lim >= NUM_BLOCKS:
         num_lim = NUM_BLOCKS - 1
 
     num = random.randint(1, num_lim)
-    x = random.randint(0, WIDTH_SIZE-1) * BLOCK_SIDE
-    y = random.randint(0, HEIGHT_SIZE-1) * BLOCK_SIDE
+    x = (random.randint(0, WIDTH_SIZE-1) if x < 0 else x) * BLOCK_SIDE
+    y = (random.randint(0, HEIGHT_SIZE-1) if y < 0 else y) * BLOCK_SIDE
 
     return Block(num, (x, y))
 
@@ -61,6 +61,9 @@ class Block:
     def getDrop(self):
         block = self.getMove((0, BLOCK_DROP_VEL))
         return block
+
+    def move(self, roff=(0, 0)):
+        self.rect.move_ip(*roff)
 
     def getMove(self, roff=(0, 0)):
         block = deepcopy(self)

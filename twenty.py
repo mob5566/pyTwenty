@@ -27,7 +27,8 @@ QUIT_KEYS = {pg.K_ESCAPE, pg.K_q}
 BLOCK_IMGS = []
 
 # game settings
-DURATION = 5
+DURATION = 10
+INIT_BLOCK_NUM = 3
 
 def main():
     global screen, fps, game_board
@@ -64,19 +65,29 @@ def main():
 def gameMain():
     tw_count = 0
     highest_score = 1
+    score_level = INIT_BLOCK_NUM
     game_quit = False
     cur_blocks = [Block(0, (wid * BLOCK_SIDE, HEIGHT_SIZE * BLOCK_SIDE))
             for wid in range(WIDTH_SIZE)]
     init_check = set()
+    init_height = 4
+    frame_cnt = 0
 
-    for _ in range(10):
-        block = genRndBlock(2)
+    for height in range(init_height):
+        genLayer(cur_blocks, INIT_BLOCK_NUM)
 
-        if block.getPos() not in init_check:
-            cur_blocks.append(block)
-            init_check.add(block.getPos())
+    # for _ in range(10):
+        # block = genRndBlock(2)
+
+        # if block.getPos() not in init_check:
+            # cur_blocks.append(block)
+            # init_check.add(block.getPos())
 
     while True:
+        if gameOver(cur_blocks):
+            print('game over!')
+            break
+
         for event in pg.event.get():
             if gameQuitEvent(event):
                 print('Get quit event')
@@ -89,13 +100,49 @@ def gameMain():
 
         screen.blit(game_board, (0, TITLE_HEIGHT))
 
+        pg.display.update()
+
+        tmp, cur_blocks = clearTwenty(cur_blocks)
+        tw_count += tmp
+        highest_score = max(
+            highest_score,
+            *[block.num for block in filter(Block.isValid, cur_blocks)]
+        )
+
+        if frame_cnt >= DURATION*FPS:
+            genLayer(cur_blocks, highest_score)
+            frame_cnt = 0
+        else:
+            frame_cnt += 1
+
+        fps.tick(FPS)
+
         if game_quit:
             break
 
-        pg.display.update()
-        fps.tick(FPS)
-
     return True
+
+def gameOver(blocks):
+    return any(block.rect.y <= TITLE_HEIGHT - BLOCK_SIDE for block in blocks)
+
+def genLayer(blocks, num_lim):
+    for block in filter(Block.isValid, blocks):
+        block.move((0, -BLOCK_SIDE))
+
+    for col in range(WIDTH_SIZE):
+        blocks.append(genRndBlock(num_lim, x = col, y = HEIGHT_SIZE-1))
+
+def clearTwenty(blocks):
+    ret_blocks = []
+    twenty_cnt = 0
+
+    for block in blocks:
+        if block.num == NUM_BLOCKS:
+            twenty_cnt += 1
+        else:
+            ret_blocks.append(block)
+
+    return twenty_cnt, ret_blocks
 
 def updateGame(blocks):
     blocks.sort(key=lambda block: block.rect.y, reverse=True)
@@ -136,7 +183,7 @@ def drawGame(blocks):
     game_board.fill((255, 255, 255))
 
     for block in blocks:
-        if block.num >= NUM_BLOCKS:
+        if block.num > NUM_BLOCKS:
             continue
 
         game_board.blit(BLOCK_IMGS[block.num], block.rect)
@@ -241,7 +288,7 @@ def gameCheckMouseEvent(event, blocks):
 def loadImages():
     global BLOCK_IMGS
     BLOCK_IMGS = [pg.image.load(path.join(PROJ_DIR, 'assets',
-    'num_{}.png'.format(num))).convert_alpha() for num in range(NUM_BLOCKS)]
+    'num_{}.png'.format(num))).convert_alpha() for num in range(NUM_BLOCKS+1)]
 
 if __name__ == '__main__':
     main()
