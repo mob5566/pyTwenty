@@ -42,9 +42,15 @@ class Block:
             BLOCK_SIDE
         )
         self.selected = False
+        self.moving = False
 
     def __repr__(self):
-        return 'Block({}, {}, {})'.format(self.num, self.rect, self.selected)
+        return 'Block({}, {}, {}, {})'.format(
+            self.num,
+            self.rect,
+            self.selected,
+            self.moving
+        )
 
     def isValid(self):
         if 0 >= self.num or self.num >= NUM_BLOCKS:
@@ -77,7 +83,13 @@ class Block:
         return block
 
     def checkCollision(self, block):
-        return self.num != block.num and self.rect.colliderect(block.rect)
+        if self.rect.colliderect(block.rect):
+            if self.num == block.num:
+                return not self.moving and not block.moving
+            else:
+                return True
+        else:
+            return False
 
     def checkMerge(self, block):
         center = (block.rect.x + BLOCK_SIDE//2, block.rect.y + BLOCK_SIDE//2)

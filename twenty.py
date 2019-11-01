@@ -106,6 +106,7 @@ def gameMain():
         tw_count += tmp
         highest_score = max(
             highest_score,
+            0,
             *[block.num for block in filter(Block.isValid, cur_blocks)]
         )
 
@@ -170,11 +171,14 @@ def updateGame(blocks):
                 break
 
         if collided:
+            block.moving = False
             ret_blocks.append(block)
         elif merged >= 0:
+            blocks[merged].moving = True
             blocks[merged].num += 1
             exists[i] = False
         else:
+            drop_block.moving = True
             ret_blocks.append(drop_block)
 
     return ret_blocks
@@ -268,6 +272,7 @@ def gameCheckMouseEvent(event, blocks):
 
         if match_block >= 0:
             blocks[match_block].selected = True
+            blocks[match_block].moving = True
     elif event.type == pg.MOUSEBUTTONUP:
         match_block = getSelected(blocks)
 
