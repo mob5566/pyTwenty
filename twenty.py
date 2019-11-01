@@ -96,11 +96,8 @@ def gameMain():
             cur_blocks = gameCheckMouseEvent(event, cur_blocks)
 
         cur_blocks = updateGame(cur_blocks)
+
         drawGame(cur_blocks)
-
-        screen.blit(game_board, (0, TITLE_HEIGHT))
-
-        pg.display.update()
 
         tmp, cur_blocks = clearTwenty(cur_blocks)
         tw_count += tmp
@@ -115,6 +112,8 @@ def gameMain():
             frame_cnt = 0
         else:
             frame_cnt += 1
+
+        drawGame(cur_blocks)
 
         fps.tick(FPS)
 
@@ -191,6 +190,9 @@ def drawGame(blocks):
             continue
 
         game_board.blit(BLOCK_IMGS[block.num], block.rect)
+
+    screen.blit(game_board, (0, TITLE_HEIGHT))
+    pg.display.update()
 
 def gameStartEvent(event):
     start = False
