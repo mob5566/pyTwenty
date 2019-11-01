@@ -268,6 +268,7 @@ def moveBlock(blocks, i, pos):
     ret_blocks = []
     if merged >= 0:
         blocks[merged].num += 1
+        blocks[merged].moving = True
     else:
         ret_blocks += [move_block]
     ret_blocks += [block for j, block in enumerate(blocks) if i != j]
