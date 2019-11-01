@@ -69,6 +69,10 @@ def gameMain():
     game_quit = False
     cur_blocks = [Block(0, (wid * BLOCK_SIDE, HEIGHT_SIZE * BLOCK_SIDE))
             for wid in range(WIDTH_SIZE)]
+    cur_blocks += [Block(0, (-BLOCK_SIDE, hid * BLOCK_SIDE))
+            for hid in range(HEIGHT_SIZE)]
+    cur_blocks += [Block(0, ((HEIGHT_SIZE-1) * BLOCK_SIDE, hid * BLOCK_SIDE))
+            for hid in range(HEIGHT_SIZE)]
     init_check = set()
     init_height = 4
     frame_cnt = 0
@@ -126,8 +130,16 @@ def gameOver(blocks):
     return any(block.rect.y <= TITLE_HEIGHT - BLOCK_SIDE for block in blocks)
 
 def genLayer(blocks, num_lim):
-    for block in filter(Block.isValid, blocks):
+    match_block = getSelected(blocks)
+
+    for block in filter(Block.isFree, blocks):
         block.move((0, -BLOCK_SIDE))
+
+    if match_block >= 0:
+        for block in filter(Block.isFree, blocks):
+            if blocks[match_block].checkCollision(block):
+                blocks[match_block].move((0, -BLOCK_SIDE))
+
 
     for col in range(WIDTH_SIZE):
         blocks.append(genRndBlock(num_lim, x = col, y = HEIGHT_SIZE-1))
@@ -146,12 +158,12 @@ def clearTwenty(blocks):
 
 def updateGame(blocks):
     blocks.sort(key=lambda block: block.rect.y, reverse=True)
-    ret_blocks = [block for block in blocks if not block.isValid() or block.selected]
+    ret_blocks = [block for block in blocks if not block.isFree()]
     exists = [True] * len(blocks)
 
     # drop and check collision
     for i, block in enumerate(blocks):
-        if not block.isValid() or block.selected:
+        if not block.isFree():
             continue
 
         drop_block = block.getDrop()

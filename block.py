@@ -61,6 +61,9 @@ class Block:
             return False
         return True
 
+    def isFree(self):
+        return self.isValid() and not self.selected
+
     def getPos(self):
         return (self.rect.x, self.rect.y)
 
