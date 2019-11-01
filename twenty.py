@@ -195,7 +195,7 @@ def updateGame(blocks):
     return ret_blocks
 
 def drawGame(blocks):
-    game_board.fill((255, 255, 255))
+    game_board.fill((220, 220, 220))
 
     for block in blocks:
         if block.num > NUM_BLOCKS:
