@@ -158,7 +158,7 @@ def clearTwenty(blocks):
     return twenty_cnt, ret_blocks
 
 def updateGame(blocks):
-    blocks.sort(key=lambda block: block.rect.y, reverse=True)
+    blocks.sort(key=lambda block: block.rect.y)
     ret_blocks = [block for block in blocks if not block.isFree()]
     exists = [True] * len(blocks)
 
