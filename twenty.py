@@ -136,9 +136,10 @@ def genLayer(blocks, num_lim):
         block.move((0, -BLOCK_SIDE))
 
     if match_block >= 0:
+        target_block = blocks[match_block]
         for block in filter(Block.isFree, blocks):
-            if blocks[match_block].checkCollision(block):
-                blocks[match_block].move((0, -BLOCK_SIDE))
+            if target_block.checkCollision(block):
+                target_block.move((0, (block.rect.y-target_block.rect.y)-BLOCK_SIDE))
 
 
     for col in range(WIDTH_SIZE):
