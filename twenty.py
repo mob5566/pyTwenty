@@ -80,13 +80,6 @@ def gameMain():
     for height in range(init_height):
         genLayer(cur_blocks, INIT_BLOCK_NUM)
 
-    # for _ in range(10):
-        # block = genRndBlock(2)
-
-        # if block.getPos() not in init_check:
-            # cur_blocks.append(block)
-            # init_check.add(block.getPos())
-
     while True:
         if gameOver(cur_blocks):
             print('game over!')
@@ -131,6 +124,15 @@ def gameOver(blocks):
 
 def genLayer(blocks, num_lim):
     match_block = getSelected(blocks)
+    last_nums = []
+
+    for col in range(WIDTH_SIZE):
+        block = getCollided(blocks, mat_pos_to_pos(col, HEIGHT_SIZE-1))
+
+        if block >= 0:
+            last_nums.append(blocks[block].num)
+        else:
+            last_nums.append(-1)
 
     for block in filter(Block.isFree, blocks):
         block.move((0, -BLOCK_SIDE))
@@ -141,9 +143,13 @@ def genLayer(blocks, num_lim):
             if target_block.checkCollision(block):
                 target_block.move((0, (block.rect.y-target_block.rect.y)-BLOCK_SIDE))
 
-
     for col in range(WIDTH_SIZE):
-        blocks.append(genRndBlock(num_lim, x = col, y = HEIGHT_SIZE-1))
+        blocks.append(genRndBlock(
+            num_lim,
+            x = col,
+            y = HEIGHT_SIZE-1,
+            not_num = last_nums[col]
+        ))
 
 def clearTwenty(blocks):
     ret_blocks = []

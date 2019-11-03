@@ -10,15 +10,25 @@ HEIGHT_SIZE = 8
 BLOCK_SIDE = 50
 BLOCK_DROP_VEL = 10
 
-def genRndBlock(num_lim = NUM_BLOCKS-1, x = -1, y = -1):
+def genRndBlock(num_lim = NUM_BLOCKS, x = -1, y = -1, not_num = -1):
     if num_lim >= NUM_BLOCKS:
-        num_lim = NUM_BLOCKS - 1
+        num_lim = NUM_BLOCKS
+    else:
+        num_lim += 1
 
-    num = random.randint(1, num_lim)
+    if not_num <= 0:
+        num_pool = list(range(1, num_lim))
+    else:
+        num_pool = list(range(1, not_num)) + list(range(not_num+1, num_lim))
+
+    num = random.choice(num_pool)
     x = (random.randint(0, WIDTH_SIZE-1) if x < 0 else x) * BLOCK_SIDE
     y = (random.randint(0, HEIGHT_SIZE-1) if y < 0 else y) * BLOCK_SIDE
 
     return Block(num, (x, y))
+
+def mat_pos_to_pos(*pos):
+    return (pos[0] * BLOCK_SIDE, pos[1] * BLOCK_SIDE)
 
 def getSelected(blocks):
     for i, block in enumerate(blocks):
