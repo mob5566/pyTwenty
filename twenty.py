@@ -140,12 +140,6 @@ def genLayer(blocks, num_lim):
     for block in filter(Block.isFree, blocks):
         block.move((0, -BLOCK_SIDE))
 
-    if match_block >= 0:
-        target_block = blocks[match_block]
-        for block in filter(Block.isFree, blocks):
-            if target_block.checkCollision(block):
-                target_block.move((0, (block.rect.y-target_block.rect.y)-BLOCK_SIDE))
-
     for col in range(WIDTH_SIZE):
         blocks.append(genRndBlock(
             num_lim,
@@ -153,6 +147,12 @@ def genLayer(blocks, num_lim):
             y = HEIGHT_SIZE-1,
             not_num = last_nums[col]
         ))
+
+    if match_block >= 0:
+        target_block = blocks[match_block]
+        for block in filter(Block.isFree, blocks):
+            if target_block.checkCollision(block):
+                target_block.move((0, (block.rect.y-target_block.rect.y)-BLOCK_SIDE))
 
 def clearTwenty(blocks):
     ret_blocks = []
