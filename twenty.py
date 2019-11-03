@@ -12,7 +12,9 @@ PROJ_DIR = path.dirname(path.realpath(sys.argv[0]))
 
 # plotting settings
 FPS = 60
-TITLE_HEIGHT = 30
+SCORE_BAR_HEIGHT = 25
+TIME_BAR_HEIGHT = 20
+TITLE_HEIGHT = SCORE_BAR_HEIGHT + TIME_BAR_HEIGHT
 GAME_SIZE = (
     WIDTH_SIZE * BLOCK_SIDE,
     HEIGHT_SIZE * BLOCK_SIDE
@@ -27,7 +29,7 @@ QUIT_KEYS = {pg.K_ESCAPE, pg.K_q}
 BLOCK_IMGS = []
 
 # game settings
-DURATION = 10
+INIT_DURATION = 10
 INIT_BLOCK_NUM = 3
 
 def main():
@@ -76,6 +78,7 @@ def gameMain():
     init_check = set()
     init_height = 4
     frame_cnt = 0
+    duration = INIT_DURATION
 
     for height in range(init_height):
         genLayer(cur_blocks, INIT_BLOCK_NUM)
@@ -94,7 +97,7 @@ def gameMain():
 
         cur_blocks = updateGame(cur_blocks)
 
-        drawGame(cur_blocks)
+        drawGame(cur_blocks, (1 - frame_cnt/(duration*FPS)))
 
         tmp, cur_blocks = clearTwenty(cur_blocks)
         tw_count += tmp
@@ -104,13 +107,13 @@ def gameMain():
             *[block.num for block in filter(Block.isValid, cur_blocks)]
         )
 
-        if frame_cnt >= DURATION*FPS:
+        if frame_cnt >= duration*FPS:
             genLayer(cur_blocks, highest_score)
             frame_cnt = 0
         else:
             frame_cnt += 1
 
-        drawGame(cur_blocks)
+        drawGame(cur_blocks, (1 - frame_cnt/(duration*FPS)))
 
         fps.tick(FPS)
 
@@ -201,7 +204,8 @@ def updateGame(blocks):
 
     return ret_blocks
 
-def drawGame(blocks):
+def drawGame(blocks, duration_rate):
+    screen.fill((255, 255, 255))
     game_board.fill((220, 220, 220))
 
     for block in blocks:
@@ -209,6 +213,17 @@ def drawGame(blocks):
             continue
 
         game_board.blit(BLOCK_IMGS[block.num], block.rect)
+
+    pg.draw.rect(
+        screen,
+        (0, 255, 0),
+        (
+            0,
+            SCORE_BAR_HEIGHT + math.floor(0.25*TIME_BAR_HEIGHT),
+            math.floor(SCREEN_SIZE[0]*duration_rate),
+            math.floor(0.5*TIME_BAR_HEIGHT)
+        )
+    )
 
     screen.blit(game_board, (0, TITLE_HEIGHT))
     pg.display.update()
